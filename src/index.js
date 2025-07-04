@@ -4,7 +4,7 @@ import app from './app.js';
 
 config();
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5500;
 
 // Only start the server if not in test mode
 if (process.env.NODE_ENV !== 'test') {
