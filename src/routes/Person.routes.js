@@ -1,18 +1,47 @@
 import express from 'express';
 import { PersonController } from '../controller/Person.controller.js';
 import upload from '../middleware/multerConfig.js';
+import { SchoolInfo } from '../controller/PersonSubClass.controller.js';
 
 const router = express.Router();
 
 // Create a new person
 router.post('/', upload.single('userImage'), async (req, res) => {
   try {
-    const filePath = req.file ? `/User_Profile/${req.file.filename}` : null;
 
-    const controller = new PersonController({
-      ...req.body,
-      userImage: filePath, // will be null if not uploaded
-    });
+    // Parse each field from req.body, defaulting to an empty object if not present
+    const parseField = (field) => (req.body[field] ? JSON.parse(req.body[field]) : {});
+
+    const personalInfo = parseField('personalInfo');
+    const bankInfo = parseField('bankInfo');
+    const toolInfo = parseField('toolInfo');
+    const contactInfo = parseField('contactInfo');
+    const reportingPersonInfo = parseField('reportingPersonInfo');
+    const salaryInfo = parseField('salaryInfo');
+    const certificates = parseField('certificates');
+    const employeeHistory = parseField('employeeHistory');
+    const healthCard = parseField('healthCard');
+    const collegeInfo = parseField('collegeDetails');
+    const schoolInfo = parseField('schoolInfo');
+
+    const userImage = req.file ? `/User_Profile/${req.file.filename}` : null;
+
+    // Set this.data to reuse your existing `createPerson()` logic
+    const data = {
+      personalInfo: { ...personalInfo, userImage },
+      bankInfo,
+      toolInfo,
+      contactInfo,
+      reportingPersonInfo: { selectedPersons: reportingPersonInfo.selectedPersons },
+      salaryInfo,
+      certificateInfo: { certificates },
+      employeeHistoryInfo: { history: employeeHistory },
+      healthCardInfo: { healthCard },
+      schoolInfo: { schoolDetails: schoolInfo },
+      collegeInfo: { collegeDetails: collegeInfo },
+    };
+
+    const controller = new PersonController(data);
 
     const response = await controller.createPerson();
     res.status(response.statusCode).json(response);
@@ -28,6 +57,17 @@ router.get('/', async (_req, res) => {
     const response = await controller.getAllPerson();
     res.status(response.statusCode).json(response);
   } catch (err) {
+    res.status(err.statusCode || 500).json(err);
+  }
+});
+
+router.get('/reporting', async (_req, res) => {
+  try {
+    const controller = new PersonController();
+    const response = await controller.getReportingPersons();
+    res.status(response.statusCode).json(response);
+  }
+  catch (err) {
     res.status(err.statusCode || 500).json(err);
   }
 });
@@ -63,7 +103,7 @@ router.get('/:Code', async (req, res) => {
 
 
 // Update person by employeeCode
-router.put('/:employeeCode',upload.single('userImage'), async (req, res) => {
+router.put('/:employeeCode', upload.single('userImage'), async (req, res) => {
   try {
     const imagePath = req.file ? `/User_Profile/${req.file.filename}` : null;
 

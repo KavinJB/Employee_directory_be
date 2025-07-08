@@ -8,26 +8,27 @@ export class ReportingPerson {
 }
 
 export class Certification {
-  constructor({ certificationName, duration, certificateLink = '' }) {
+  constructor({ certificationName, startDate, endDate, certificateLink = '' }) {
     this.certificationName = certificationName;
-    this.duration = duration;
+    this.startDate = startDate;
+    this.endDate = endDate;
     this.certificateLink = certificateLink;
   }
 }
 
 export class EmploymentHistory {
-  constructor({ companyName, designation, duration }) {
+  constructor({ companyName, designation, startDate, endDate, }) {
     this.companyName = companyName;
     this.designation = designation;
-    this.duration = duration;
+    this.startDate = startDate;
+    this.endDate = endDate;
   }
 }
 
 export class HealthCardStatus {
-  constructor({ cardName, groupName, employeeId, memberName, gender, amount, status = 'pending' }) {
-    this.cardName = cardName;
+  constructor({ groupName, ergoId, memberName, gender, amount, status = 'pending' }) {
     this.groupName = groupName;
-    this.employeeId = employeeId;
+    this.ergoId = ergoId;
     this.memberName = memberName;
     this.gender = gender;
     this.amount = amount;
@@ -36,13 +37,13 @@ export class HealthCardStatus {
 }
 
 export class BankAccountInformation {
-  constructor({ panNumber, aadharNumber, bankAccountNumber, bankName, ifscCode, nameAsPerPassbook, uanNumber }) {
+  constructor({ panNumber, aadharNumber, bankAccountNumber, bankName, ifscCode, passbookName, uanNumber }) {
     this.panNumber = panNumber;
     this.aadharNumber = aadharNumber;
     this.bankAccountNumber = bankAccountNumber;
     this.bankName = bankName;
     this.ifscCode = ifscCode;
-    this.nameAsPerPassbook = nameAsPerPassbook;
+    this.passbookName = passbookName;
     this.uanNumber = uanNumber;
   }
 }
@@ -70,37 +71,59 @@ export class ToolAccess {
 }
 
 export class SalaryInformation {
-  constructor({ designation, perHrCost, lastUpdated = new Date() }) {
+  constructor({ designation,salaryInLpa,ctsb,variablePay,lastUpdated = new Date() }) {
     this.designation = designation;
-    this.perHrCost = perHrCost;
+    this.salaryInLpa = salaryInLpa;
+    this.ctsb = ctsb;
+    this.variablePay = variablePay;
     this.lastUpdated = lastUpdated;
   }
 }
 
-export class AdminCheckList {
-  constructor({
-    system = false,
-    software = false,
-    timesheet = false,
-    attendance = false,
-    businessCard = false,
-    whatsapp = false,
-    mailId = false,
-    mailSignature = false,
-    mailGroups = false,
-    bioMetric = false,
-    diary = false
-  }) {
-    this.system = system;
-    this.software = software;
-    this.timesheet = timesheet;
-    this.attendance = attendance;
-    this.businessCard = businessCard;
-    this.whatsapp = whatsapp;
-    this.mailId = mailId;
-    this.mailSignature = mailSignature;
-    this.mailGroups = mailGroups;
-    this.bioMetric = bioMetric;
-    this.diary = diary;
+
+export class CollegeInfo {
+  constructor({ degree, collegeName, degreeProgram, startDate, endDate }) {
+    this.degree = degree;
+    this.collegeName = collegeName;
+    this.degreeProgram = degreeProgram;
+    this.startDate = startDate;
+    this.endDate = endDate;
+  }
+} 
+
+export class SchoolInfo {
+  constructor({ schoolName, schoolLevel, startDate, endDate }) {
+    this.schoolName = schoolName;      
+    this.schoolLevel = schoolLevel;
+    this.startDate = startDate;
+    this.endDate = endDate;  
   }
 }
+
+// export class AdminCheckList {
+//   constructor({
+//     system = false,
+//     software = false,
+//     timesheet = false,
+//     attendance = false,
+//     businessCard = false,
+//     whatsapp = false,
+//     mailId = false,
+//     mailSignature = false,
+//     mailGroups = false,
+//     bioMetric = false,
+//     diary = false
+//   }) {
+//     this.system = system;
+//     this.software = software;
+//     this.timesheet = timesheet;
+//     this.attendance = attendance;
+//     this.businessCard = businessCard;
+//     this.whatsapp = whatsapp;
+//     this.mailId = mailId;
+//     this.mailSignature = mailSignature;
+//     this.mailGroups = mailGroups;
+//     this.bioMetric = bioMetric;
+//     this.diary = diary;
+//   }
+// }

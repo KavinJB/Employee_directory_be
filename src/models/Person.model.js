@@ -1,31 +1,47 @@
 // person.model.js
 import mongoose from 'mongoose';
-
 const { Schema, model } = mongoose;
 
 // --- Sub-Schemas ---
 const ReportingPersonSchema = new Schema({
   employeeName: { type: String, },
-  designation: { type: String,  },
+  workMail: { type: String, },
+  designation: { type: String, },
   employeeCode: { type: String, }
 }, { _id: false });
 
 const CertificationSchema = new Schema({
-  certificationName: { type: String,  },
-  duration: { type: String,  },
+  certificationName: { type: String, },
+  startDate: { type: Date, },
+  endDate: { type: Date, },
   certificateLink: { type: String, default: '' }
 }, { _id: false });
 
 const EmploymentHistorySchema = new Schema({
-  companyName: { type: String, required: true },
-  designation: { type: String, required: true },
-  duration: { type: String, required: true }
+  companyName: { type: String, },
+  designation: { type: String, },
+  startDate: { type: Date, },
+  endDate: { type: Date, },
+}, { _id: false });
+
+const collegeSchema = new Schema({
+  degree: { type: String, },
+  collegeName: { type: String, },
+  degreeProgram: { type: String, },
+  startDate: { type: Date, },
+  endDate: { type: Date, },
+}, { _id: false });
+
+const schoolSchema = new Schema({
+  schoolName: { type: String, },
+  schoolLevel: { type: String, },
+  startDate: { type: Date, },
+  endDate: { type: Date, },
 }, { _id: false });
 
 const HealthCardStatusSchema = new Schema({
-  cardName: String,
   groupName: String,
-  employeeId: String,
+  ergoId: String,
   memberName: String,
   gender: String,
   amount: String,
@@ -33,12 +49,20 @@ const HealthCardStatusSchema = new Schema({
 }, { _id: false });
 
 const BankAccountInformationSchema = new Schema({
-  panNumber: { type: String, required: true },
-  aadharNumber: { type: String, required: true },
+  panNumber: {
+    type: String,
+    required: [true, 'PAN number is required'],
+    validate: v => v && v.trim() !== ''
+  },
+  aadharNumber: {
+    type: String,
+    required: [true, 'Aadhar number is required'],
+    validate: v => v && v.trim() !== ''
+  },
   bankAccountNumber: String,
   bankName: String,
   ifscCode: String,
-  PassbookName: String,
+  passbookName: String,
   uanNumber: String
 }, { _id: false });
 
@@ -54,9 +78,11 @@ const ToolAccessSchema = new Schema({
 }, { _id: false });
 
 const SalaryInformationSchema = new Schema({
-  designation: { type: String, required: true },
-  perHrCost: { type: Number, required: true },
-  lastUpdated: { type: Date, default: Date.now }
+  designation: { type: String },
+  salaryInLpa: { type: Number },
+  ctsb: { type: Number },
+  variablePay: { type: Number },
+  startDate: { type: Date },
 }, { _id: false });
 
 // const AdminCheckListSchema = new Schema({
@@ -79,8 +105,6 @@ const PersonSchema = new Schema({
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
   workMail: { type: String, required: true, unique: true },
-  contactNo: { type: String, required: true },
-  personalMail: { type: String, required: true },
   userImage: { type: String, default: '' }, // URL or path to the image
 
   // --- Personal Details (Optional) ---
@@ -92,11 +116,19 @@ const PersonSchema = new Schema({
   maritalStatus: { type: String, default: 'single' },
   // nationality: { type: String, default: 'Indian' },
 
+  // --- Contact Information (Required) ---
+
+  contactNo: { type: String, required: true },
+  personalMail: { type: String, required: true },
+  currentAddress: { type: String },
+  permanentAddress: { type: String },
+  emergencyContactNo: { type: String },
+
   // --- Employment Details (Required) ---
   organization: { type: String, required: true },
   businessUnit: { type: String, required: true },
   serviceUnit: { type: String, required: true },
-  // designation: { type: String, required: true },
+  department: { type: String, required: true },
   positionJoined: { type: String, required: true },
 
   // --- Auto create while employee DB.Save() ---
@@ -106,7 +138,7 @@ const PersonSchema = new Schema({
   employmentType: String,
   branch: String,
   doj: String,
-  currentStatus: { type: String, default: 'active' },
+  currentStatus: { type: String, default: 'working' },
   currentPosition: String,
   dol: String,
   access_level: { type: String, default: 'user' },
@@ -115,7 +147,9 @@ const PersonSchema = new Schema({
   reportingPersons: { type: [ReportingPersonSchema], default: [] },
   certifications: { type: [CertificationSchema], default: [] },
   employmentHistory: { type: [EmploymentHistorySchema], default: [] },
-  healthCardStatus: HealthCardStatusSchema,
+  healthCardStatus: { type: [HealthCardStatusSchema], default: [] },
+  collegeDetails: { type: [collegeSchema], default: [] },
+  schoolDetails: { type: [schoolSchema], default: [] },
   bankAccountInformation: BankAccountInformationSchema,
   toolAccess: ToolAccessSchema,
   salaryInformation: SalaryInformationSchema,

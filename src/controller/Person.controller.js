@@ -9,9 +9,9 @@ import {
   HealthCardStatus,
   BankAccountInformation,
   ToolAccess,
-  SalaryInformation
+  SalaryInformation,
 } from './PersonSubClass.controller.js'; // adjust path accordingly
-// import { Mailer } from '../utils/Mailer.js'; // adjust path accordingly
+import { Mailer } from '../utils/Mailer.js'; // adjust path accordingly
 
 export class PersonController {
   constructor(data) {
@@ -21,45 +21,63 @@ export class PersonController {
   // CREATE
   async createPerson() {
     try {
+      const {
+        personalInfo,
+        bankInfo,
+        toolInfo,
+        contactInfo,
+        reportingPersonInfo,
+        salaryInfo,
+        certificateInfo,
+        employeeHistoryInfo,
+        collegeInfo,
+        schoolInfo,
+        healthCardInfo
+      } = this.data;
+
       // Step 1: Build the person instance (with sub-schema classes)
-
-      // console.log('Creating person with data:', this.data);
       const newPerson = new Person({
-        ...this.data.personalInfo,
+        ...personalInfo,
+        workMail: personalInfo.workMail,
+        personalMail: contactInfo.personalMail,
+        contactNo: contactInfo.contactNo,
+        userImage: personalInfo.userImage || '',
 
-        userImage: this.data.userImage || '', // Default to empty string if not provided
-        workMail: this.data.personalInfo?.workMail,
-        personalMail: this.data.contactInfo?.personalMail,
-        contactNo: this.data.contactInfo?.contactNo,
-
-        // Safe .map for reportingPersonInfo
-        reportingPersons: this.data.reportingPersonInfo
-          ? (Array.isArray(this.data.reportingPersonInfo)
-            ? this.data.reportingPersonInfo.map(rp => new ReportingPerson(rp))
-            : [new ReportingPerson(this.data.reportingPersonInfo)])
+        reportingPersons: Array.isArray(reportingPersonInfo?.selectedPersons)
+          ? reportingPersonInfo.selectedPersons
+            .filter(p => p && (p.employeeName || p.employeeCode))
+            .map(p => new ReportingPerson(p))
           : [],
 
-        // Safe .map for certifications
-        certifications: this.data.certificateInfo
-          ? (Array.isArray(this.data.certificateInfo)
-            ? this.data.certificateInfo.map(c => new Certification(c))
-            : [new Certification(this.data.certificateInfo)])
+        certifications: Array.isArray(certificateInfo?.certificates)
+          ? certificateInfo.certificates
           : [],
 
-        // Safe .map for employmentHistory
-        employmentHistory: this.data.employmentHistoryInfo
-          ? (Array.isArray(this.data.employmentHistoryInfo)
-            ? this.data.employmentHistoryInfo.map(eh => new EmploymentHistory(eh))
-            : [new EmploymentHistory(this.data.employmentHistoryInfo)])
+        employmentHistory: Array.isArray(employeeHistoryInfo?.history)
+          ? employeeHistoryInfo.history
           : [],
 
-        // Single-object embedded docs
-        healthCardStatus: new HealthCardStatus(this.data.healthCardInfo || {}),
-        bankAccountInformation: new BankAccountInformation(this.data.bankInfo || {}),
-        toolAccess: new ToolAccess(this.data.toolInfo || {}),
-        salaryInformation: new SalaryInformation(this.data.salaryInfo || {})
+        healthCardStatus: Array.isArray(healthCardInfo?.healthCard)
+          ? healthCardInfo.healthCard.map(hc => new HealthCardStatus(hc))
+          : [],
+
+        collegeDetails: Array.isArray(collegeInfo.collegeDetails)
+          ? collegeInfo.collegeDetails
+          : [],
+
+        schoolDetails: Array.isArray(schoolInfo.schoolDetails)
+          ? schoolInfo.schoolDetails
+          : [],
+
+        bankAccountInformation: new BankAccountInformation(bankInfo),
+        toolAccess: new ToolAccess(toolInfo),
+        salaryInformation: new SalaryInformation(salaryInfo)
       });
 
+      if (personalInfo.userImage) {
+        const icon = `${this.data.protocol || 'http'}://${this.data.host || '192.168.1.60:5500'}${personalInfo.userImage}`;
+        newPerson.userImage = icon;
+      }
 
       // Step 2: Run Mongoose validation
       await newPerson.validate();
@@ -80,31 +98,15 @@ export class PersonController {
         throw new ApiError(400, casdoorInserted.message || 'Failed to create Casdoor user');
       }
 
-      console.log(newPerson);
-
       const savedPerson = await newPerson.save();
 
       // // Send email with password
-      // try {
-      //   // await sendPasswordEmail(this.data.personalMail, userData.password);
-
-      //   await Mailer.sendEmail(
-      //     `${userData.email}`,
-      //     'Welcome to Jupiter Brothers',
-      //     'Your account has been created.',
-      //     `
-      //       <p>Hello,</p>
-      //       <p>Your account has been created.</p>
-      //       <p><strong>Email:</strong>${userData.email}</p>
-      //       <p><strong>Password:</strong>${userData.password}</p>
-      //     `
-      //   );
-
-      //   console.log('sent mail');
-      // } catch (emailErr) {
-      //   console.error('Failed to send email:', emailErr.message);
-      //   // Optional: you can throw here if email must be mandatory
-      // }
+      try {
+        await Mailer.sendEmail(userData.email, userData.password);
+        console.log('sent mail');
+      } catch (emailErr) {
+        console.error('Failed to send email:', emailErr.message);
+      }
 
       return new ApiResponse(201, savedPerson, 'Employee created successfully');
 
@@ -140,6 +142,16 @@ export class PersonController {
     }
   }
 
+  // READ: Get Reporting Persons
+  async getReportingPersons() {
+    try {
+      const persons = await Person.find().select('employeeCode firstName lastName userImage currentPosition positionJoined');
+      return new ApiResponse(200, persons);
+    } catch (err) {
+      throw new ApiError(500, 'Failed to fetch reporting persons', null, err.stack);
+    }
+  }
+
   // READ: Get by Employee Code
   async getByEmployeeCode(code) {
     try {
@@ -165,37 +177,59 @@ export class PersonController {
   // UPDATE
   async updatePerson(code) {
     try {
-      const updatedData = {
-        ...this.data.personalInfo,
+      const {
+        personalInfo,
+        contactInfo,
+        reportingPersonInfo,
+        certificateInfo,
+        employmentHistoryInfo,
+        healthCardInfo,
+        collegeInfo,
+        schoolInfo,
+        bankInfo,
+        toolInfo,
+        salaryInfo,
+      } = this.data;
 
-        workMail: this.data.personalInfo?.workMail,
-        personalMail: this.data.contactInfo?.personalMail,
-        contactNo: this.data.contactInfo?.contactNo,
-        ...(this.data.reportingPersonInfo && {
-          reportingPersons: this.data.reportingPersonInfo.map(rp => new ReportingPerson(rp)),
-        }),
-        ...(this.data.certificateInfo && {
-          certifications: this.data.certificateInfo.map(c => new Certification(c)),
-        }),
-        ...(this.data.employmentHistoryInfo && {
-          employmentHistory: this.data.employmentHistoryInfo.map(eh => new EmploymentHistory(eh)),
-        }),
-        ...(this.data.healthCardInfo && {
-          healthCardStatus: new HealthCardStatus(this.data.healthCardInfo),
-        }),
-        ...(this.data.bankInfo && {
-          bankAccountInformation: new BankAccountInformation(this.data.bankInfo),
-        }),
-        ...(this.data.toolInfo && {
-          toolAccess: new ToolAccess(this.data.toolInfo),
-        }),
-        ...(this.data.salaryInfo && {
-          salaryInformation: new SalaryInformation(this.data.salaryInfo),
-        }),
+      const updatedData = {
+        ...personalInfo,
+        workMail: personalInfo?.workMail,
+        personalMail: contactInfo?.personalMail,
+        contactNo: contactInfo?.contactNo,
+        userImage: personalInfo?.userImage || '',
+
+        reportingPersons: Array.isArray(reportingPersonInfo?.selectedPersons)
+          ? reportingPersonInfo.selectedPersons.map(rp => new ReportingPerson(rp))
+          : [],
+
+        certifications: Array.isArray(certificateInfo?.certificates)
+          ? certificateInfo.certificates.map(c => new Certification(c))
+          : [],
+
+        employmentHistory: Array.isArray(employmentHistoryInfo?.history)
+          ? employmentHistoryInfo.history.map(eh => new EmploymentHistory(eh))
+          : [],
+
+        healthCardStatus: Array.isArray(healthCardInfo?.healthCard)
+          ? healthCardInfo.healthCard.map(hc => new HealthCardStatus(hc))
+          : [],
+
+        collegeDetails: Array.isArray(collegeInfo?.collegeDetails)
+          ? collegeInfo.collegeDetails
+          : [],
+
+        schoolDetails: Array.isArray(schoolInfo?.schoolDetails)
+          ? schoolInfo.schoolDetails
+          : [],
+
+        bankAccountInformation: new BankAccountInformation(bankInfo || {}),
+        toolAccess: new ToolAccess(toolInfo || {}),
+        salaryInformation: new SalaryInformation(salaryInfo || {})
       };
-      
+
       if (this.data.userImage) {
-        updatedData.userImage = this.data.userImage;
+        const icon = `${this.data.protocol || 'http'}://${this.data.host || '192.168.1.60:5500'}${this.data.userImage}`;
+        updatedData.userImage = icon;
       }
 
       const updated = await Person.findOneAndUpdate(

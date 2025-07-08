@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
     cb(null, path.join(__dirname, '../../public/User_Profile/')); // Ensure folder exists
   },
   filename: (_req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const uniqueSuffix = Date.now() + '-' + file.originalname.replace(/\s+/g, '-').toLowerCase();
     cb(null, uniqueSuffix + path.extname(file.originalname));
   }
 });
