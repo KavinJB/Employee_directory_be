@@ -142,18 +142,8 @@ export class PersonController {
     }
   }
 
-  // READ: Get Reporting Persons
-  async getReportingPersons() {
-    try {
-      const persons = await Person.find().select('employeeCode firstName lastName userImage currentPosition positionJoined');
-      return new ApiResponse(200, persons);
-    } catch (err) {
-      throw new ApiError(500, 'Failed to fetch reporting persons', null, err.stack);
-    }
-  }
-
-  // READ: Get by Employee Code
-  async getByEmployeeCode(code) {
+  // READ: Get employee data by Employee Code
+  async getEmployeeByEmployeeCode(code) {
     try {
       const person = await Person.findOne({ employeeCode: code });
       if (!person) throw new ApiError(404, 'Employee not found');
@@ -163,8 +153,8 @@ export class PersonController {
     }
   }
 
-  // READ: Get by Work Email
-  async getByWorkEmail(email) {
+  // READ: Get employee data by Work Email
+  async getEmployeeByWorkEmail(email) {
     try {
       const person = await Person.findOne({ workMail: email });
       if (!person) throw new ApiError(404, 'Employee not found');

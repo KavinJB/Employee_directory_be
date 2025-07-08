@@ -1,7 +1,7 @@
 import express from 'express';
 import { PersonController } from '../controller/Person.controller.js';
 import upload from '../middleware/multerConfig.js';
-import { SchoolInfo } from '../controller/PersonSubClass.controller.js';
+import { ReportingPerson, SchoolInfo } from '../controller/PersonSubClass.controller.js';
 
 const router = express.Router();
 
@@ -63,7 +63,7 @@ router.get('/', async (_req, res) => {
 
 router.get('/reporting', async (_req, res) => {
   try {
-    const controller = new PersonController();
+    const controller = new ReportingPerson();
     const response = await controller.getReportingPersons();
     res.status(response.statusCode).json(response);
   }
@@ -85,10 +85,10 @@ router.get('/:Code', async (req, res) => {
 
     if (isNumericString) {
       // Treat as employeeCode
-      response = await controller.getByEmployeeCode(input);
+      response = await controller.getEmployeeByEmployeeCode(input);
     } else {
       // Treat as workEmail
-      response = await controller.getByWorkEmail(input);
+      response = await controller.getEmployeeByWorkEmail(input);
     }
 
     res.status(response.statusCode).json(response);

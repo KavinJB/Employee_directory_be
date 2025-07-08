@@ -1,9 +1,21 @@
+import Person from "../models/Person.model.js";
+
 // personSubSchemas.js
 export class ReportingPerson {
   constructor({ employeeName, designation, employeeCode }) {
     this.employeeName = employeeName;
     this.designation = designation;
     this.employeeCode = employeeCode;
+  }
+
+  // READ: Get Reporting Persons
+  static async getReportingPersons() {
+    try {
+      const persons = await Person.find().select('employeeCode firstName lastName userImage currentPosition positionJoined');
+      return new ApiResponse(200, persons);
+    } catch (err) {
+      throw new ApiError(500, 'Failed to fetch reporting persons', null, err.stack);
+    }
   }
 }
 
@@ -71,7 +83,7 @@ export class ToolAccess {
 }
 
 export class SalaryInformation {
-  constructor({ designation,salaryInLpa,ctsb,variablePay,lastUpdated = new Date() }) {
+  constructor({ designation, salaryInLpa, ctsb, variablePay, lastUpdated = new Date() }) {
     this.designation = designation;
     this.salaryInLpa = salaryInLpa;
     this.ctsb = ctsb;
@@ -89,14 +101,14 @@ export class CollegeInfo {
     this.startDate = startDate;
     this.endDate = endDate;
   }
-} 
+}
 
 export class SchoolInfo {
   constructor({ schoolName, schoolLevel, startDate, endDate }) {
-    this.schoolName = schoolName;      
+    this.schoolName = schoolName;
     this.schoolLevel = schoolLevel;
     this.startDate = startDate;
-    this.endDate = endDate;  
+    this.endDate = endDate;
   }
 }
 
